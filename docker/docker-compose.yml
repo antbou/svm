@@ -8,6 +8,8 @@ services:
       - "8080:8080"
     volumes:
       - ../:/app
+    environment:
+      - JAVA_OPTS=-Dspring.devtools.restart.enabled=true -Dspring.devtools.livereload.enabled=true
     working_dir: /app
     stdin_open: true
     tty: true
