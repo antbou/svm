@@ -18,8 +18,8 @@ public class SvmController {
     private final ScraperService scraper;
     private final MenuStorageService menuStorageService;
 
-    @GetMapping("/")
-    public List<Menu> hello1() {
+    @GetMapping("/menus")
+    public List<Menu> getWeeklyMenu() {
         // 4. Refactor this to be a scheduled task
         List<Menu> menus = menuStorageService.getWeeklyMenu(LocalDate.now());
         if (menus.isEmpty()) {
@@ -28,4 +28,6 @@ public class SvmController {
         }
         return menus;
     }
+
+
 }
