@@ -33,3 +33,4 @@ build/
 .vscode/
 
 screenshot*
+src/main/resources/application-prod.properties

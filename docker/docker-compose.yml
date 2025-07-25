@@ -11,6 +11,7 @@ services:
     environment:
       - JAVA_OPTS=-Dspring.devtools.restart.enabled=true -Dspring.devtools.livereload.enabled=true
       - SPRING_DATA_MONGODB_URI=mongodb://svuser:svpass@mongo:27017/svmenu?authSource=admin
+      - SPRING_PROFILES_ACTIVE=local
     depends_on:
       - mongo
     working_dir: /app
