@@ -10,6 +10,23 @@ services:
       - ../:/app
     environment:
       - JAVA_OPTS=-Dspring.devtools.restart.enabled=true -Dspring.devtools.livereload.enabled=true
+      - SPRING_DATA_MONGODB_URI=mongodb://svuser:svpass@mongo:27017/svmenu?authSource=admin
+    depends_on:
+      - mongo
     working_dir: /app
     stdin_open: true
     tty: true
+
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=svuser
+      - MONGO_INITDB_ROOT_PASSWORD=svpass
+      - MONGO_INITDB_DATABASE=svmenu
+volumes:
+  mongo_data:
