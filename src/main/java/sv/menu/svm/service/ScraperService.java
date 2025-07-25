@@ -14,7 +14,6 @@ import java.text.Normalizer;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @RequiredArgsConstructor
@@ -63,12 +62,10 @@ public class ScraperService {
         );
 
         List<Menu> menus = new ArrayList<>(List.of());
-        AtomicInteger index = new AtomicInteger(0);
         links.forEach(
                 link -> {
                     link.click(new ElementHandle.ClickOptions().setTimeout(250));
                     page.waitForTimeout(1000);
-                    index.getAndIncrement();
                     LocalDate date = LocalDate.parse(link.getAttribute("href").replaceAll("/menu/.+/date/", ""));
                     menus.add(parseMenu(page, date));
                 }

@@ -18,7 +18,7 @@ public class MenuScraperScheduler {
     private final ScraperService scraperService;
     private final MenuRepository menurepository;
 
-    @Scheduled(cron = "0 0 0/8 * * ?") // Runs every 8 hours
+    @Scheduled(cron = "0 0 6 ? * MON") // Runs every 8 hours
     public void scrapeAndStoreMenus() {
         List<Menu> menus = scraperService.scrapeSvMenu();
         log.info("Started scraping menus. Found {} menus.", menus.size());
