@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
@@ -18,6 +19,7 @@ public class Menu {
     @Id
     String id;
     @NonNull
+    @Indexed(unique = true)
     LocalDate date;
     boolean isHoliday;
     List<Category> categories;
