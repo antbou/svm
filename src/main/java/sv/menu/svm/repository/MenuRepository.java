@@ -19,7 +19,7 @@ public class MenuRepository {
 
     public List<Menu> getWeeklyMenu(LocalDate date) {
         LocalDate startOfWeek = date.with(DayOfWeek.MONDAY);
-        LocalDate endOfWeek = startOfWeek.plusDays(6);
+        LocalDate endOfWeek = startOfWeek.plusDays(DayOfWeek.FRIDAY.getValue() - DayOfWeek.MONDAY.getValue());
         return menuRepository.findByDateBetween(startOfWeek, endOfWeek);
     }
 }
