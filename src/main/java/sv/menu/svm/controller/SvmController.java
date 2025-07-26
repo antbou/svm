@@ -1,12 +1,14 @@
 package sv.menu.svm.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import sv.menu.svm.domain.Menu;
 import sv.menu.svm.repository.MenuRepository;
 import sv.menu.svm.scheduler.MenuScraperScheduler;
@@ -16,21 +18,35 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/v1/api")
 @RequiredArgsConstructor
 public class SvmController {
     private final MenuRepository menuRepository;
     private final MenuScraperScheduler menuScraperScheduler;
 
+    @Operation(summary = "Get weekly menu", description = "Returns the menu for the current week")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful retrieval of weekly menu")
+    })
     @GetMapping("/menus")
+    @ResponseStatus(HttpStatus.OK)
     public List<Menu> getWeeklyMenu() {
         return menuRepository.getWeeklyMenu(LocalDate.now());
     }
 
+    @Operation(
+            summary = "Scrape and store menus",
+            description = "Admin endpoint to trigger menu scraping",
+            security = @SecurityRequirement(name = "basicAuth")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Menu resource created successfully")
+    })
     @PostMapping("/admin/scrape")
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<String> scrapeSvMenu() {
         log.info("Admin endpoint called to scrape menus.");
         menuScraperScheduler.scrapeAndStoreMenus();
-        return ResponseEntity.ok("Menu scraping initiated successfully.");
+        return ResponseEntity.status(HttpStatus.CREATED).body("Menu resource created successfully.");
     }
 }
