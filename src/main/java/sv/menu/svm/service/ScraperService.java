@@ -30,7 +30,7 @@ public class ScraperService {
         log.info("Selecting week index: {}", index);
         try {
             page.waitForTimeout(10000);
-            page.locator("mat-form-field.week-select-form-field").click(new Locator.ClickOptions().setTimeout(3000));
+            page.locator("mat-form-field.week-select-form-field").click(new Locator.ClickOptions().setTimeout(30000));
             page.waitForTimeout(1000);
             page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots/step_" + step + "_week_form_open.png")));
 
