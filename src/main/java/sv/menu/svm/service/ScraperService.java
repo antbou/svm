@@ -1,6 +1,7 @@
 package sv.menu.svm.service;
 
 import com.microsoft.playwright.*;
+import com.microsoft.playwright.options.LoadState;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +32,7 @@ public class ScraperService {
             page.waitForSelector("mat-form-field.week-select-form-field",
                     new Page.WaitForSelectorOptions().setTimeout(10000)
             ).click();
-
+            page.waitForLoadState(LoadState.NETWORKIDLE);
             page.waitForTimeout(2000);
 //            page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots-sv-menu-week-select" + weekIndex + ".png")));
 
@@ -39,6 +40,8 @@ public class ScraperService {
 
             if (options.size() > weekIndex) {
                 options.get(weekIndex).click();
+                log.info("Week index {} selected successfully.", weekIndex);
+                page.waitForLoadState(LoadState.NETWORKIDLE);
             } else {
                 log.warn("Week index {} out of bounds, only {} options found", weekIndex, options.size());
             }
@@ -57,19 +60,31 @@ public class ScraperService {
     }
 
     private void acceptCookies(Page page) {
-        try {
-            page.waitForSelector("#cookiescript_reject", new Page.WaitForSelectorOptions().setTimeout(10000)).click();
-            log.info("Cookies accepted successfully.");
-            page.waitForTimeout(5000);
-        } catch (PlaywrightException e) {
-            log.error("Failed to accept cookies: {}", e.getMessage());
-            throw new RuntimeException("Failed to accept cookies", e);
+//        try {
+//            page.waitForSelector("#cookiescript_reject", new Page.WaitForSelectorOptions().setTimeout(10000)).click();
+//            log.info("Cookies accepted successfully.");
+//            page.waitForTimeout(5000);
+//        } catch (PlaywrightException e) {
+//            log.error("Failed to accept cookies: {}", e.getMessage());
+//            throw new RuntimeException("Failed to accept cookies", e);
+//        }
+        ElementHandle rejectButton = page.waitForSelector("#cookiescript_reject", new Page.WaitForSelectorOptions().setTimeout(10000));
+        if (rejectButton != null) {
+            try {
+                rejectButton.click(new ElementHandle.ClickOptions().setTimeout(10000));
+                page.waitForLoadState(LoadState.NETWORKIDLE);
+                log.info("Cookies accepted successfully.");
+            } catch (PlaywrightException e) {
+                log.error("Click failed on #cookiescript_reject: {}", e.getMessage());
+                page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots/cookie_click_failed.png")));
+                throw new RuntimeException("Failed to click on cookie reject", e);
+            }
         }
     }
 
     private Browser launchBrowser() {
         return playwright.chromium().launch(
-                new BrowserType.LaunchOptions().setHeadless(true).setSlowMo(500)
+                new BrowserType.LaunchOptions().setHeadless(true).setSlowMo(100)
 //                        .setArgs(List.of("--start-maximized", "--disable-web-security"))
         );
     }
@@ -88,7 +103,9 @@ public class ScraperService {
         List<Menu> menus = new ArrayList<>(List.of());
         links.forEach(
                 link -> {
-                    link.click(new ElementHandle.ClickOptions().setTimeout(250));
+                    link.click(new ElementHandle.ClickOptions().setTimeout(2000));
+                    log.info("Navigating to menu link: {}", link.getAttribute("href"));
+                    page.waitForLoadState(LoadState.NETWORKIDLE);
                     page.waitForTimeout(1000);
                     LocalDate date = LocalDate.parse(link.getAttribute("href").replaceAll("/menu/.+/date/", ""));
                     menus.add(parseMenu(page, date));
@@ -102,14 +119,13 @@ public class ScraperService {
         Browser browser = launchBrowser();
         Page page = browser.newPage();
         page.navigate(SV_ENDPOINT);
+        page.waitForLoadState(LoadState.NETWORKIDLE);
         page.screenshot(new Page.ScreenshotOptions()
                 .setPath(Paths.get("screenshots/render_initial.png")));
-
         acceptCookies(page);
         page.waitForTimeout(2000);
         page.screenshot(new Page.ScreenshotOptions()
                 .setPath(Paths.get("screenshots/render_after_cookies.png")));
-
 
 //        page.waitForSelector("nav.menu-day-selection",
 //                new Page.WaitForSelectorOptions().setTimeout(15000)
@@ -130,6 +146,7 @@ public class ScraperService {
     private Menu parseMenu(Page page, LocalDate date) {
         List<ElementHandle> categories = page.querySelectorAll("app-category");
         Menu menu = Menu.builder().date(date).isHoliday(false).build();
+        log.info("Parsing menu for date: {}", date);
 
         if (categories.isEmpty()) {
             menu.setHoliday(true);
