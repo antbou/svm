@@ -10,6 +10,7 @@ import sv.menu.svm.domain.Category;
 import sv.menu.svm.domain.Menu;
 import sv.menu.svm.domain.TypeCategory;
 
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.Normalizer;
 import java.time.LocalDate;
@@ -28,14 +29,16 @@ public class ScraperService {
     private void selectWeek(Page page, int index, int step) {
         log.info("Selecting week index: {}", index);
         try {
-            page.locator("mat-form-field.week-select-form-field").click(new Locator.ClickOptions().setTimeout(10000));
-            page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+            page.waitForTimeout(10000);
+            page.locator("mat-form-field.week-select-form-field").click(new Locator.ClickOptions().setTimeout(3000));
+            page.waitForTimeout(1000);
             page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots/step_" + step + "_week_form_open.png")));
+
             List<Locator> options = page.locator("mat-option").all();
             log.info("Found {} week options", options.size());
             if (options.size() > index) {
+                page.waitForTimeout(5000);
                 options.get(index).click(new Locator.ClickOptions().setTimeout(5000));
-                page.waitForLoadState(LoadState.DOMCONTENTLOADED);
                 page.waitForTimeout(1000);
                 page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots/step_" + (step + 1) + "_week_" + index + "_selected.png")));
                 log.info("Week {} selected successfully", index);
@@ -49,22 +52,18 @@ public class ScraperService {
 
     private void acceptCookies(Page page) {
         log.info("Attempting to accept/reject cookies");
-
         try {
             Locator reject = page.locator("#cookiescript_reject");
 
             if (reject.isVisible()) {
                 reject.scrollIntoViewIfNeeded();
                 reject.hover();
-                page.waitForTimeout(500); // allow rendering
+                page.waitForTimeout(3000);
                 reject.click(new Locator.ClickOptions()
                         .setTimeout(10000)
-                        .setForce(true)); // Force click if something blocks it
-
-                page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+                        .setForce(true));
                 page.waitForTimeout(500);
                 page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots/step_03_cookies_rejected.png")));
-
                 log.info("Cookies rejected successfully");
             } else {
                 log.info("Reject button not visible");
@@ -94,9 +93,9 @@ public class ScraperService {
                 String href = link.getAttribute("href");
                 if (href != null && href.matches("^/menu/.+/date/\\d{4}-\\d{2}-\\d{2}$")) {
                     log.info("Clicking menu link: {}", href);
-                    link.click(new Locator.ClickOptions().setTimeout(2000));
-                    page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+                    link.click(new Locator.ClickOptions().setTimeout(5000));
                     page.waitForSelector("app-category", new Page.WaitForSelectorOptions().setTimeout(10000));
+                    page.waitForTimeout(500);
                     page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots/step_" + step + "_menu_" + index + ".png")));
                     LocalDate date = LocalDate.parse(href.replaceAll("/menu/.+/date/", ""));
                     log.info("Parsing menu for date: {}", date);
@@ -115,13 +114,16 @@ public class ScraperService {
         List<Menu> menus = new ArrayList<>();
         try (Browser browser = launchBrowser()) {
             Page page = browser.newPage();
-            page.setDefaultTimeout(60000);
+            page.setDefaultTimeout(90000);
 
             try {
                 log.info("Navigating to endpoint: {}", SV_ENDPOINT);
-                page.navigate(SV_ENDPOINT);
+                page.navigate(SV_ENDPOINT, new Page.NavigateOptions().setTimeout(90000));
                 page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+                page.waitForSelector("nav.menu-day-selection", new Page.WaitForSelectorOptions().setTimeout(30000));
+                page.waitForTimeout(3000);
                 page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots/step_01_page_loaded.png")));
+                Files.writeString(Paths.get("screenshots/page_content.html"), page.content());
             } catch (TimeoutError e) {
                 page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots/step_01_page_failed.png")));
                 log.error("Navigation failed: {}", e.getMessage());
