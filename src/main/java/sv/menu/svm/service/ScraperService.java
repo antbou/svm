@@ -49,17 +49,27 @@ public class ScraperService {
 
     private void acceptCookies(Page page) {
         log.info("Attempting to accept/reject cookies");
+
         try {
             Locator reject = page.locator("#cookiescript_reject");
+
             if (reject.isVisible()) {
-                reject.click(new Locator.ClickOptions().setTimeout(5000));
+                reject.scrollIntoViewIfNeeded();
+                reject.hover();
+                page.waitForTimeout(500); // allow rendering
+                reject.click(new Locator.ClickOptions()
+                        .setTimeout(10000)
+                        .setForce(true)); // Force click if something blocks it
+
                 page.waitForLoadState(LoadState.DOMCONTENTLOADED);
                 page.waitForTimeout(500);
                 page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots/step_03_cookies_rejected.png")));
+
                 log.info("Cookies rejected successfully");
             } else {
-                log.info("Cookie reject button not visible");
+                log.info("Reject button not visible");
             }
+
         } catch (Exception e) {
             log.error("Cookie reject failed: {}", e.getMessage());
             page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots/step_03_cookie_click_failed.png")));
