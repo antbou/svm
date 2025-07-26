@@ -2,6 +2,8 @@ FROM maven:3.9-eclipse-temurin-21 AS builder
 
 WORKDIR /app
 
+RUN mkdir -p /app/screenshots
+
 COPY pom.xml .
 RUN mvn dependency:go-offline
 

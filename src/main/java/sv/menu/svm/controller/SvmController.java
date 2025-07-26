@@ -13,7 +13,9 @@ import sv.menu.svm.domain.Menu;
 import sv.menu.svm.repository.MenuRepository;
 import sv.menu.svm.scheduler.MenuScraperScheduler;
 
+import java.io.File;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -49,4 +51,22 @@ public class SvmController {
         menuScraperScheduler.scrapeAndStoreMenus();
         return ResponseEntity.status(HttpStatus.CREATED).body("Menu resource created successfully.");
     }
+
+    @GetMapping("/screenshots")
+    public List<String> listScreenshots() {
+        File folder = new File("screenshots");
+        if (!folder.exists() || !folder.isDirectory()) {
+            return List.of();
+        }
+
+        File[] files = folder.listFiles();
+        if (files == null) {
+            return List.of();
+        }
+
+        return Arrays.stream(files)
+                .map(File::getName)
+                .toList();
+    }
+
 }

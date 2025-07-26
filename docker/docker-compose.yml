@@ -8,9 +8,9 @@ services:
       - "8080:8080"
     volumes:
       - ../:/app
+      - screenshot_data:/app/screenshots
     environment:
       - JAVA_OPTS=-Dspring.devtools.restart.enabled=true -Dspring.devtools.livereload.enabled=true
-      - SPRING_DATA_MONGODB_URI=mongodb://svuser:svpass@mongo:27017/svmenu?authSource=admin
       - SPRING_PROFILES_ACTIVE=local
     depends_on:
       - mongo
@@ -29,5 +29,7 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=svuser
       - MONGO_INITDB_ROOT_PASSWORD=svpass
       - MONGO_INITDB_DATABASE=svmenu
+
 volumes:
   mongo_data:
+  screenshot_data:

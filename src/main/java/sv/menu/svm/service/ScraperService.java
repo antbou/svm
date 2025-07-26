@@ -33,7 +33,7 @@ public class ScraperService {
             ).click();
 
             page.waitForTimeout(2000);
-            page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots-sv-menu-week-select" + weekIndex + ".png")));
+//            page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots-sv-menu-week-select" + weekIndex + ".png")));
 
             List<ElementHandle> options = page.querySelectorAll("mat-option");
 
@@ -42,9 +42,13 @@ public class ScraperService {
             } else {
                 log.warn("Week index {} out of bounds, only {} options found", weekIndex, options.size());
             }
+            page.waitForTimeout(2000);
+            page.screenshot(new Page.ScreenshotOptions()
+                    .setPath(Paths.get("screenshots/render_" + weekIndex + ".png")));
 
-            page.waitForTimeout(1000);
-            page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots-sv-menu-week-selected" + weekIndex + ".png")));
+
+//            page.waitForTimeout(1000);
+//            page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots-sv-menu-week-selected" + weekIndex + ".png")));
 
         } catch (TimeoutError e) {
             log.error("Failed to select week index {}: {}", weekIndex, e.getMessage());
@@ -56,7 +60,7 @@ public class ScraperService {
         try {
             page.waitForSelector("#cookiescript_reject", new Page.WaitForSelectorOptions().setTimeout(10000)).click();
             log.info("Cookies accepted successfully.");
-            page.waitForTimeout(1000);
+            page.waitForTimeout(5000);
         } catch (PlaywrightException e) {
             log.error("Failed to accept cookies: {}", e.getMessage());
             throw new RuntimeException("Failed to accept cookies", e);
@@ -65,7 +69,8 @@ public class ScraperService {
 
     private Browser launchBrowser() {
         return playwright.chromium().launch(
-                new BrowserType.LaunchOptions().setHeadless(true)
+                new BrowserType.LaunchOptions().setHeadless(true).setSlowMo(500)
+//                        .setArgs(List.of("--start-maximized", "--disable-web-security"))
         );
     }
 
@@ -97,11 +102,18 @@ public class ScraperService {
         Browser browser = launchBrowser();
         Page page = browser.newPage();
         page.navigate(SV_ENDPOINT);
-        acceptCookies(page);
+        page.screenshot(new Page.ScreenshotOptions()
+                .setPath(Paths.get("screenshots/render_initial.png")));
 
-        page.waitForSelector("nav.menu-day-selection",
-                new Page.WaitForSelectorOptions().setTimeout(15000)
-        );
+        acceptCookies(page);
+        page.waitForTimeout(2000);
+        page.screenshot(new Page.ScreenshotOptions()
+                .setPath(Paths.get("screenshots/render_after_cookies.png")));
+
+
+//        page.waitForSelector("nav.menu-day-selection",
+//                new Page.WaitForSelectorOptions().setTimeout(15000)
+//        );
 
         List<Menu> menus = new ArrayList<>(List.of());
 
