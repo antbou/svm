@@ -25,12 +25,31 @@ public class ScraperService {
     private String SV_ENDPOINT;
 
     private static void extracted(Page page, Integer weekIndex) {
-        page.waitForSelector("mat-form-field.week-select-form-field").click();
-        page.waitForTimeout(250);
-        page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots-sv-menu-week-select" + weekIndex + ".png")));
-        page.querySelectorAll("mat-option").get(weekIndex).click();
-        page.waitForTimeout(250);
-        page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots-sv-menu-week-selected" + weekIndex + ".png")));
+        try {
+            log.info("Selecting week index: {}", weekIndex);
+
+            page.waitForSelector("mat-form-field.week-select-form-field",
+                    new Page.WaitForSelectorOptions().setTimeout(10000)
+            ).click();
+
+            page.waitForTimeout(2000);
+            page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots-sv-menu-week-select" + weekIndex + ".png")));
+
+            List<ElementHandle> options = page.querySelectorAll("mat-option");
+
+            if (options.size() > weekIndex) {
+                options.get(weekIndex).click();
+            } else {
+                log.warn("Week index {} out of bounds, only {} options found", weekIndex, options.size());
+            }
+
+            page.waitForTimeout(1000);
+            page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots-sv-menu-week-selected" + weekIndex + ".png")));
+
+        } catch (TimeoutError e) {
+            log.error("Failed to select week index {}: {}", weekIndex, e.getMessage());
+            throw e;
+        }
     }
 
     private void acceptCookies(Page page) {
@@ -79,6 +98,10 @@ public class ScraperService {
         Page page = browser.newPage();
         page.navigate(SV_ENDPOINT);
         acceptCookies(page);
+
+        page.waitForSelector("nav.menu-day-selection",
+                new Page.WaitForSelectorOptions().setTimeout(15000)
+        );
 
         List<Menu> menus = new ArrayList<>(List.of());
 
