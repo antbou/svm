@@ -120,7 +120,6 @@ public class ScraperService {
                 log.info("Navigating to endpoint: {}", SV_ENDPOINT);
                 page.navigate(SV_ENDPOINT, new Page.NavigateOptions().setTimeout(90000));
                 page.waitForLoadState(LoadState.DOMCONTENTLOADED);
-                page.waitForSelector("nav.menu-day-selection", new Page.WaitForSelectorOptions().setTimeout(30000));
                 page.waitForTimeout(3000);
                 page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots/step_01_page_loaded.png")));
                 Files.writeString(Paths.get("screenshots/page_content.html"), page.content());
