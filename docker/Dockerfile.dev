@@ -2,6 +2,19 @@ FROM mcr.microsoft.com/playwright/java:v1.50.0-noble
 
 WORKDIR /app
 
+COPY ../mvnw .
+COPY ../.mvn .mvn
+COPY ../pom.xml .
+
+RUN chmod +x mvnw && ./mvnw dependency:resolve
+
+RUN ./mvnw exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps"
+
+COPY ../src ./src
+
 RUN mkdir -p /app/screenshots
 
-ENTRYPOINT ["./entrypoint.sh"]
+COPY docker/entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
+ENTRYPOINT ["./docker/entrypoint.sh"]
