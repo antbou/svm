@@ -83,6 +83,7 @@ public class ScraperService {
 
             boolean success = retryWithBackoff(() -> {
                 link.click(new Locator.ClickOptions().setTimeout(5000));
+                page.waitForTimeout(2000);
                 page.waitForSelector("#" + tabId + "[aria-selected='true']",
                         new Page.WaitForSelectorOptions().setTimeout(8000));
                 page.waitForSelector(panelSelector + " app-category, " + panelSelector + " div.text-gray-400",
