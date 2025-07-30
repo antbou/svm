@@ -1,21 +1,35 @@
+# Stage 1: Build the application with Maven
 FROM maven:3.9-eclipse-temurin-21 AS builder
 
 WORKDIR /app
 
+# Download dependencies first to leverage Docker cache
 COPY pom.xml .
 RUN mvn dependency:go-offline
 
 COPY . .
-
-RUN mvn exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps"
-
 RUN mvn clean package -DskipTests
 
+# Stage 2: Final image with Playwright and app JAR
 FROM mcr.microsoft.com/playwright/java:v1.50.0-noble
 
 WORKDIR /app
 
-COPY --from=builder /app/target/*.jar app.jar
+# Copy minimal sources to install Playwright browsers
+# Installing browsers at build time avoids:
+# - delays at runtime
+# - network failures during startup
+# - inconsistent environments across environments
+COPY pom.xml .
+COPY src ./src
+
+RUN mvn -q dependency:resolve \
+ && mvn -q exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps"
+
+RUN rm -rf src pom.xml
+
+# Copy only the final application JAR
+COPY --from=builder /app/target/*.jar /app/app.jar
 
 RUN mkdir -p /app/screenshots
 
