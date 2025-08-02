@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sv.menu.svm.domain.Menu;
 import sv.menu.svm.repository.MenuRepository;
-import sv.menu.svm.scheduler.MenuScraperScheduler;
+import sv.menu.svm.service.ScraperService;
 
 import java.io.File;
 import java.time.LocalDate;
@@ -24,7 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SvmController {
     private final MenuRepository menuRepository;
-    private final MenuScraperScheduler menuScraperScheduler;
+    private final ScraperService scraperService;
 
     @Operation(summary = "Get weekly menu", description = "Returns the menu for the current week")
     @ApiResponses(value = {
@@ -48,10 +48,14 @@ public class SvmController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<String> scrapeSvMenu() {
         log.info("Admin endpoint called to scrape menus.");
-        menuScraperScheduler.scrapeAndStoreMenus();
+        List<Menu> menus = menuRepository.saveMenu(scraperService.scrapeSvMenu());
+        if (menus.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No new menus found to scrape.");
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body("Menu resource created successfully.");
     }
 
+    @Operation(summary = "List screenshots", description = "Returns a list of available screenshots")
     @GetMapping("/screenshots")
     public List<String> listScreenshots() {
         File folder = new File("screenshots");
