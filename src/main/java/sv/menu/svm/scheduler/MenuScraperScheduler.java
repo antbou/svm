@@ -2,8 +2,8 @@ package sv.menu.svm.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import sv.menu.svm.domain.Menu;
 import sv.menu.svm.repository.MenuRepository;
@@ -14,22 +14,22 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class MenuScraperScheduler {
+@Profile("job")
+public class MenuScraperScheduler implements CommandLineRunner {
     private final ScraperService scraperService;
     private final MenuRepository menurepository;
 
-    @Scheduled(cron = "0 0 6 ? * MON") // Runs every 8 hours
-    public void scrapeAndStoreMenus() {
-        List<Menu> menus = scraperService.scrapeSvMenu();
-        log.info("Started scraping menus. Found {} menus.", menus.size());
-        if (!menus.isEmpty()) {
-            log.info("Saving scraped menus to storage : {}", menus);
-            try {
-                menurepository.saveMenu(menus);
-                log.info("Menus saved successfully.");
-            } catch (DuplicateKeyException e) {
-                log.warn("Duplicate key error while saving menus: {}", e.getMessage());
-            }
-        }
+    @Override
+    public void run(String... args) {
+        log.info("EXECUTING : command line runner for scraping menus");
+        scrapeAndStoreMenus();
+        log.info("EXECUTED : command line runner for scraping menus successfully");
+        System.exit(0);
+    }
+
+    // @Scheduled(cron = "0 0 6 ? * MON")
+    private void scrapeAndStoreMenus() {
+        List<Menu> menus = menurepository.saveMenu(scraperService.scrapeSvMenu());
+        log.info("Scheduled scraping completed. {} menus saved.", menus.size());
     }
 }
