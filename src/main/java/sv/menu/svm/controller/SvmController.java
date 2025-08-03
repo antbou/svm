@@ -55,8 +55,12 @@ public class SvmController {
         return ResponseEntity.status(HttpStatus.CREATED).body("Menu resource created successfully.");
     }
 
-    @Operation(summary = "List screenshots", description = "Returns a list of available screenshots")
-    @GetMapping("/screenshots")
+    @Operation(
+            summary = "List screenshots",
+            description = "Returns a list of available screenshots taken during scraping",
+            security = @SecurityRequirement(name = "basicAuth")
+    )
+    @GetMapping("/admin/screenshots")
     public List<String> listScreenshots() {
         File folder = new File("screenshots");
         if (!folder.exists() || !folder.isDirectory()) {
