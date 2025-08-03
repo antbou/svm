@@ -1,0 +1,19 @@
+name: Weekly Scrape
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'   # Every Monday at 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  scrape_job:
+    runs-on: ubuntu-latest
+
+    env:
+      SCRAPE_URL: ${{ secrets.SCRAPE_URL }}
+
+    steps:
+      - name: Send POST request with basic auth
+        run: |
+          curl -X POST "$SCRAPE_URL" \
+            -u ${{ secrets.BASIC_AUTH }}
