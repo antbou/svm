@@ -56,12 +56,12 @@ conventions below.
 ## Example Commit History
 
 ```
-Feat: Create task model
-Feat: Add task creation endpoint
-Test: Add unit tests for task model
-Fix: Prevent duplicate task entries
-Refact: Move task validation to middleware
-Docs: Update API usage examples
-Style: Format code with Prettier
-Chore: Update Express to latest version
+Feat: create task model
+Feat: add task creation endpoint
+Test: add unit tests for task model
+Fix: prevent duplicate task entries
+Refact: move task validation to middleware
+Docs: update API usage examples
+Style: format code with Prettier
+Chore: update Express to latest version
 ```
