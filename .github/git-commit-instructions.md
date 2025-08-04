@@ -6,7 +6,7 @@ conventions below.
 ## Format
 
 ```
-<Type>: <Capitalized short action in lowercase>
+<Type>: <short action in lowercase>
 ```
 
 **Examples:**
