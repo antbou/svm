@@ -46,6 +46,13 @@ conventions below.
 
 ---
 
+## Writing Good Messages
+
+* Use **imperative mood** (e.g., `add`, not `added` or `adds`).
+* Be **concise and specific**.
+* Keep messages in **English**.
+* Limit to one action per commit when possible.
+
 ## Example Commit History
 
 ```
