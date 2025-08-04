@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +23,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/api")
 @RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = lombok.AccessLevel.PRIVATE)
 public class SvmController {
-    private final MenuRepository menuRepository;
-    private final ScraperService scraperService;
+    MenuRepository menuRepository;
+    ScraperService scraperService;
 
     @Operation(summary = "Get weekly menu", description = "Returns the menu for the current week")
     @ApiResponses(value = {

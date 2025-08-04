@@ -7,7 +7,7 @@ import lombok.NonNull;
 
 @Data
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.ALWAYS)
 public class Category {
     @NonNull
     TypeCategory type;

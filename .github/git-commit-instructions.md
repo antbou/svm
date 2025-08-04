@@ -46,15 +46,22 @@ conventions below.
 
 ---
 
+## Writing Good Messages
+
+* Use **imperative mood** (e.g., `add`, not `added` or `adds`).
+* Be **concise and specific**.
+* Keep messages in **English**.
+* Limit to one action per commit when possible.
+
 ## Example Commit History
 
 ```
 Feat: create task model
 Feat: add task creation endpoint
+Test: add unit tests for task model
 Fix: prevent duplicate task entries
-Refact: simplify task controller logic
-Test: add unit tests for task service
-Docs: update README with API usage
-Style: format files with Prettier
-Chore: upgrade Express to v4.18.2
+Refact: move task validation to middleware
+Docs: update API usage examples
+Style: format code with Prettier
+Chore: update Express to latest version
 ```
