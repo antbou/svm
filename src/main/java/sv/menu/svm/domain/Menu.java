@@ -13,7 +13,7 @@ import java.util.List;
 
 @Data
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.ALWAYS)
 @Document(collection = "menus")
 public class Menu {
     @Id
