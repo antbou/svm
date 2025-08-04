@@ -1,6 +1,7 @@
 package sv.menu.svm.repository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -13,8 +14,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@FieldDefaults(makeFinal = true, level = lombok.AccessLevel.PRIVATE)
 public class MenuRepository {
-    private final MenuRepositoryInterface menuRepository;
+    MenuRepositoryInterface menuRepository;
 
     public List<Menu> saveMenu(List<Menu> menus) {
         log.info("Started scraping menus. Found {} menus.", menus.size());

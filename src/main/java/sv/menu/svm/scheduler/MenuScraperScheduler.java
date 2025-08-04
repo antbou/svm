@@ -1,6 +1,7 @@
 package sv.menu.svm.scheduler;
 
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -15,9 +16,10 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @Profile("job")
+@FieldDefaults(makeFinal = true, level = lombok.AccessLevel.PRIVATE)
 public class MenuScraperScheduler implements CommandLineRunner {
-    private final ScraperService scraperService;
-    private final MenuRepository menurepository;
+    ScraperService scraperService;
+    MenuRepository menurepository;
 
     @Override
     public void run(String... args) {

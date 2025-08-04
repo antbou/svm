@@ -3,6 +3,7 @@ package sv.menu.svm.service;
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.LoadState;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,11 +21,11 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class ScraperService {
-    private final Playwright playwright;
-
+    Playwright playwright;
     @Value("${sv.endpoint}")
-    private String SV_ENDPOINT;
+    String SV_ENDPOINT;
 
     public List<Menu> scrapeSvMenu() {
         List<Menu> menus = new ArrayList<>();
