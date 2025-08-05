@@ -3,6 +3,7 @@ package sv.menu.svm.repository;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import sv.menu.svm.domain.Menu;
@@ -33,6 +34,7 @@ public class MenuRepository {
         return savedMenus;
     }
 
+    @Cacheable(value = "weeklyMenu", key = "#date")
     public List<Menu> getWeeklyMenu(LocalDate date) {
         LocalDate startOfWeek = date.with(DayOfWeek.MONDAY);
         LocalDate endOfWeek = startOfWeek.plusDays(DayOfWeek.FRIDAY.getValue() - DayOfWeek.MONDAY.getValue());
