@@ -23,7 +23,8 @@ import java.util.List;
 @Slf4j
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class ScraperService {
-    Playwright playwright;
+    final Playwright playwright;
+
     @Value("${sv.endpoint}")
     String SV_ENDPOINT;
 
