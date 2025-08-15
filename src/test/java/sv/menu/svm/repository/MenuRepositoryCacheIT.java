@@ -3,7 +3,6 @@ package sv.menu.svm.repository;
 import com.microsoft.playwright.Playwright;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
@@ -11,8 +10,8 @@ import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import sv.menu.svm.domain.Category;
 import sv.menu.svm.domain.Menu;
 
@@ -27,7 +26,7 @@ import static sv.menu.svm.domain.TypeCategory.MENU;
 
 @EnableCaching
 @SpringBootTest
-@ExtendWith(SpringExtension.class)
+@ActiveProfiles("test")
 @ImportAutoConfiguration(exclude = {MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
 class MenuRepositoryCacheIT {
 
@@ -116,6 +115,24 @@ class MenuRepositoryCacheIT {
         assertThat(result1).isEqualTo(menus1);
         assertThat(result2).isEqualTo(menus1);
         verify(menuRepositoryInterface, times(1)).findByDateBetween(any(), any());
+    }
+
+    @Test
+    void testCacheExpiration() throws InterruptedException {
+        // Given
+        when(menuRepositoryInterface.findByDateBetween(any(), any()))
+                .thenReturn(menus1)
+                .thenReturn(menus2);
+
+        // When
+        List<Menu> result1 = menuRepository.getWeeklyMenu(date1);
+        Thread.sleep(2100);
+        List<Menu> result2 = menuRepository.getWeeklyMenu(date1);
+
+        // Then
+        verify(menuRepositoryInterface, times(2)).findByDateBetween(any(), any());
+        assertThat(result1).isEqualTo(menus1);
+        assertThat(result2).isEqualTo(menus2);
     }
 }
 
