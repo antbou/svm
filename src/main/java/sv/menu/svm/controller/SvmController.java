@@ -50,7 +50,7 @@ public class SvmController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<String> scrapeSvMenu() {
         log.info("Admin endpoint called to scrape menus.");
-        List<Menu> menus = menuRepository.saveMenu(scraperService.scrapeSvMenu());
+        List<Menu> menus = menuRepository.saveMenu(scraperService.run());
         if (menus.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No new menus found to scrape.");
         }

@@ -1,6 +1,7 @@
 package sv.menu.svm.service;
 
 import com.microsoft.playwright.*;
+import com.microsoft.playwright.options.AriaRole;
 import com.microsoft.playwright.options.LoadState;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -17,6 +18,7 @@ import java.text.Normalizer;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +30,7 @@ public class ScraperService {
     @Value("${sv.endpoint}")
     String SV_ENDPOINT;
 
-    public List<Menu> scrapeSvMenu() {
+    public List<Menu> run() {
         List<Menu> menus = new ArrayList<>();
         try (Browser browser = launchBrowser()) {
             Page page = browser.newPage();
@@ -49,11 +51,11 @@ public class ScraperService {
 
             acceptCookies(page);
 
-            selectWeek(page, 0, 4);
-            menus.addAll(scrapeMenuOfTheWeek(page, 5));
+            selectWeek(page, 0, 6);
+            menus.addAll(scrapeMenuOfTheWeek(page, 0));
 
             selectWeek(page, 1, 6);
-            menus.addAll(scrapeMenuOfTheWeek(page, 7));
+            menus.addAll(scrapeMenuOfTheWeek(page, 1));
 
             log.info("Scraping complete. Total menus scraped: {}", menus.size());
             page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots/step_08_done.png")));
@@ -65,7 +67,7 @@ public class ScraperService {
         return menus;
     }
 
-    private List<Menu> scrapeMenuOfTheWeek(Page page, int step) {
+    private List<Menu> scrapeMenuOfTheWeek(Page page, int week) {
         List<Menu> menus = new ArrayList<>();
         List<Locator> links = page.locator("nav.menu-day-selection a").all();
         log.info("Found {} menu links", links.size());
@@ -105,7 +107,7 @@ public class ScraperService {
 
             if (hasCategory) {
                 log.info("Found data for {}", date);
-                menu = parseMenu(page, date);
+                menu = parseMenu(page, link, date, week);
             } else if (hasNoData) {
                 log.info("No data for {}, marking as holiday", date);
                 menu.setHoliday(true);
@@ -118,6 +120,18 @@ public class ScraperService {
         }
 
         return menus;
+    }
+
+//    private
+
+
+    /**
+     * Retourne un Locator vers l'onglet "Nutritional Information" (DE/EN/FR).
+     */
+    private Locator nutritionTabIn(Locator container) {
+        log.info("Searching for nutritional tab in container: {}", container);
+        return container.getByRole(AriaRole.TAB, new Locator.GetByRoleOptions()
+                .setName(Pattern.compile("NÄHRWERTE", Pattern.CASE_INSENSITIVE)));
     }
 
     private boolean isValidLink(String href, String tabId) {
@@ -140,19 +154,18 @@ public class ScraperService {
         return false;
     }
 
-    private boolean waitForSelectorWithRetries(Page page, String selector, int baseTimeout, int maxAttempts) {
+    private void waitForSelectorWithRetries(Page page, String selector, int baseTimeout, int maxAttempts) {
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
                 page.waitForSelector(selector, new Page.WaitForSelectorOptions().setTimeout(baseTimeout * attempt));
-                return true;
+                return;
             } catch (Exception e) {
                 log.warn("Attempt {} failed for selector '{}': {}", attempt, selector, e.getMessage());
             }
         }
-        return false;
     }
 
-    private Menu parseMenu(Page page, LocalDate date) {
+    private Menu parseMenu(Page page, Locator link, LocalDate date, int week) {
         Menu menu = Menu.builder().date(date).isHoliday(false).build();
         List<ElementHandle> categories = page.querySelectorAll("app-category");
         log.info("Found {} categories for date {}", categories.size(), date);
@@ -165,10 +178,18 @@ public class ScraperService {
 
         menu.setCategories(new ArrayList<>());
 
-        for (ElementHandle category : categories) {
+        for (int i = 0; i < categories.size(); i++) {
+            ElementHandle category = categories.get(i);
+
+            log.info("Before clicking, category {}: {}", i + 1, category.innerText());
+            link.click(
+                    new Locator.ClickOptions().setTimeout(5000)
+            );
+            log.info("Link clicked for category {}", i + 1);
             try {
                 String rawTitle = category.querySelector("h3.category-header").innerText();
-                String normalized = Normalizer.normalize(rawTitle, Normalizer.Form.NFD)
+
+                String normalized = Normalizer.normalize(rawTitle.trim(), Normalizer.Form.NFD)
                         .replaceAll("\\p{M}", "")
                         .toUpperCase()
                         .replace(" ", "_");
@@ -176,10 +197,18 @@ public class ScraperService {
                 String description = category.querySelector(".product-teaser").innerText();
                 String title = category.querySelector(".legacy-text-xxl").innerText();
                 TypeCategory type = TypeCategory.valueOf(normalized);
+                page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots/step_05_category" + date + i + ".png")));
 
                 List<ElementHandle> prices = category.querySelectorAll(".price");
                 String priceInt = prices.getFirst().innerText();
                 String priceExt = prices.size() > 1 ? prices.get(1).innerText() : "";
+
+                log.info("Before clicking, category title: {}", title);
+                category.scrollIntoViewIfNeeded();
+                category.click();
+                log.info("Clicked on category: {}", title);
+                page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("screenshots/step_05_category_detail" + date + i + ".png")));
+
 
                 Category cat = Category.builder()
                         .type(type)
@@ -191,6 +220,11 @@ public class ScraperService {
 
                 log.info("Parsed category: {}", title);
                 menu.getCategories().add(cat);
+                page.goBack(new Page.GoBackOptions().setTimeout(5000));
+                if (week > 0) {
+                    selectWeek(page, week, 6);
+                }
+                categories = page.querySelectorAll("app-category");
             } catch (Exception e) {
                 log.warn("Failed to parse category: {}", e.getMessage());
             }

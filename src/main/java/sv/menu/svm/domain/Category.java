@@ -19,4 +19,5 @@ public class Category {
     String priceInt;
     @NonNull
     String priceExt;
+    Nutrition nutrition;
 }

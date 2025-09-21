@@ -31,7 +31,7 @@ public class MenuScraperScheduler implements CommandLineRunner {
 
     // @Scheduled(cron = "0 0 6 ? * MON")
     private void scrapeAndStoreMenus() {
-        List<Menu> menus = menurepository.saveMenu(scraperService.scrapeSvMenu());
+        List<Menu> menus = menurepository.saveMenu(scraperService.run());
         log.info("Scheduled scraping completed. {} menus saved.", menus.size());
     }
 }
